@@ -1,0 +1,57 @@
+module hamwt_locations(
+clk,
+clear,
+pkt_starts,
+bin_data,
+ham_wt,
+locn_ones
+);
+
+input clk;
+input clear;
+input pkt_starts;
+input [7:0] bin_data; //packets of 8bit data 128 times (128*8=1024 is the entire data sequence)
+
+output reg [4:0] ham_wt;	//max is 31, i.e 5 bit
+output reg [9:0] locn_ones; //1024 possible locations, i.e 10 bit output for 1's in the sequence
+
+
+wire clk;
+wire clear;
+wire pkt_starts;
+wire [7:0] bin_data; 
+
+reg i;
+reg locnofones;
+reg hw;
+reg [31:0] index;
+
+always @(posedge clk) begin
+    if((pkt_starts == 1) || (clear == 1)) begin
+      index = 0;
+      locnofones = 0;
+	hw = 0;
+    end
+    else begin
+      for (i=0; i < bin_data; i = i + 1) begin
+        if(bin_data[i] == 1) begin
+//every time it sees a 1, add for the hamming weight
+          locnofones = locnofones << 10 + (index+i);
+		hw=hw+1;
+        end
+      end
+      index <= index + 1;
+    end
+      ham_wt <= hw;
+   locn_ones <= locnofones;
+    end
+endmodule
+
+
+
+
+
+
+
+
+
